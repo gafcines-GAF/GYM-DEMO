@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block titulo %}{{ fecha|date:"j/m" }}{% endblock %}
+{% block contenido %}
+<div class="nav-fecha">
+  <a href="{% url 'turnos:dia' anterior %}" aria-label="Día anterior">‹</a>
+  <h1>{{ fecha|date:"l j \d\e F"|capfirst }}</h1>
+  <a href="{% url 'turnos:dia' siguiente %}" aria-label="Día siguiente">›</a>
+</div>
+<div class="lista-dia">
+  {% for f in franjas %}{% include "turnos/_franja.html" %}{% endfor %}
+</div>
+{% include "turnos/_modal_cambio.html" %}
+{% endblock %}
+{% block scripts %}{% include "turnos/_script_franjas.html" %}{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block titulo %}{{ mes_fecha|date:"F Y" }}{% endblock %}
+{% block contenido %}
+<div class="nav-fecha">
+  <a href="{% url 'turnos:mes' anterior.year anterior.month %}" aria-label="Mes anterior">‹</a>
+  <h1>{{ mes_fecha|date:"F Y"|capfirst }}</h1>
+  <a href="{% url 'turnos:mes' siguiente.year siguiente.month %}" aria-label="Mes siguiente">›</a>
+</div>
+
+{% if user.is_staff %}
+<form method="post" action="{% url 'turnos:generar_mes' mes_fecha.year mes_fecha.month %}" class="acciones-mes">
+  {% csrf_token %}
+  <button class="{% if generado %}secundario{% else %}primario{% endif %}">
+    {% if generado %}Completar semana tipo del mes{% else %}Generar turnos del mes{% endif %}
+  </button>
+  <small>Replica la semana tipo de cada alumno. No duplica ni pisa cambios ya hechos.</small>
+</form>
+{% endif %}
+
+<div class="grilla-mes">
+  {% for n in "LMMJV" %}<div class="cabecera">{{ n }}</div>{% endfor %}
+  {% for _ in offset %}<div></div>{% endfor %}
+  {% for d, franjas in dias %}
+    <a class="dia-mes{% if d == hoy %} dia-mes--hoy{% endif %}" href="{% url 'turnos:dia' d %}">
+      <span class="dia-mes__num">{{ d.day }}</span>
+      {% for f in franjas %}{% if f.es_mia %}<span class="franja__badge">{{ f.hora|stringformat:"02d" }}:00</span>{% endif %}{% endfor %}
+      <span class="mini" aria-hidden="true">
+        {% for f in franjas %}<span class="nivel-{{ f.nivel }}{% if f.es_mia %} mini--mia{% endif %}{% if f.cancelada %} mini--cancelada{% endif %}" title="{{ f.hora }}:00 · {{ f.ocupados }}/{{ f.cupo }}"></span>{% endfor %}
+      </span>
+    </a>
+  {% endfor %}
+</div>
+{% endblock %}

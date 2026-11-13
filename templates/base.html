@@ -1,0 +1,48 @@
+{% load static %}<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Turnos{% endblock %} · Gimnasio</title>
+  <link rel="stylesheet" href="{% static 'turnos/turnos.css' %}">
+</head>
+<body>
+  <header class="barra">
+    <a class="marca" href="{% url 'turnos:inicio' %}">🏋️ Gimnasio</a>
+    {% if user.is_authenticated and fecha %}
+    <nav class="tabs" aria-label="Vista">
+      <a href="{% url 'turnos:dia' fecha %}" class="{% if vista == 'dia' %}activa{% endif %}">Día</a>
+      <a href="{% url 'turnos:semana' fecha %}" class="{% if vista == 'semana' %}activa{% endif %}">Semana</a>
+      <a href="{% url 'turnos:mes' fecha.year fecha.month %}" class="{% if vista == 'mes' %}activa{% endif %}">Mes</a>
+    </nav>
+    {% endif %}
+    {% if user.is_authenticated %}
+    <div class="usuario">
+      <span>{{ user.get_full_name|default:user.username }}{% if user.is_staff %} · <em>Profesor</em>{% endif %}</span>
+      {% if user.is_staff %}<a href="{% url 'admin:index' %}">Admin</a>{% endif %}
+      <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="link">Salir</button></form>
+    </div>
+    {% endif %}
+  </header>
+
+  {% if messages %}
+  <div class="avisos">
+    {% for m in messages %}<div class="aviso aviso--{{ m.tags }}">{{ m }}</div>{% endfor %}
+  </div>
+  {% endif %}
+
+  <main>{% block contenido %}{% endblock %}</main>
+
+  {% if user.is_authenticated %}
+  <ul class="leyenda" aria-label="Referencias">
+    <li><span class="punto nivel-libre"></span>Disponible</li>
+    <li><span class="punto nivel-medio"></span>Pocos lugares</li>
+    <li><span class="punto nivel-lleno"></span>Completa</li>
+    {% if user.is_staff %}<li><span class="punto nivel-sobrecupo"></span>Sobrecupo</li>{% endif %}
+    <li><span class="punto punto--mia"></span>Tu turno</li>
+  </ul>
+  {% endif %}
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

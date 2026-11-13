@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block titulo %}Clase {{ fecha|date:"j/m" }} {{ hora }}:00{% endblock %}
+{% block contenido %}
+<p><a href="{% url 'turnos:dia' fecha %}">‹ Volver al día</a></p>
+
+<section class="tarjeta detalle nivel-{{ nivel }}{% if clase.cancelada %} franja--cancelada{% endif %}">
+  <header class="detalle__cab">
+    <h1>{{ fecha|date:"l j \d\e F"|capfirst }} · {{ hora|stringformat:"02d" }}:00</h1>
+    <span class="detalle__cupo">{{ ocupados }}/{{ cupo }}</span>
+  </header>
+  {% if clase.cancelada %}<p class="aviso aviso--warning">Esta clase está cancelada.</p>{% endif %}
+  {% if nivel == "sobrecupo" %}<p class="aviso aviso--error">⚠ Clase en sobrecupo: hay {{ ocupados }} alumnos para {{ cupo }} lugares.</p>{% endif %}
+
+  <h2>Inscriptos</h2>
+  {% if inscriptos %}
+  <ul class="inscriptos">
+    {% for i in inscriptos %}
+    <li>
+      <span>{{ i.alumno }}
+        <small class="etiqueta">{{ i.get_origen_display }}</small>
+        {% if i.sobrecupo %}<small class="etiqueta etiqueta--alerta">sobrecupo</small>{% endif %}
+      </span>
+      <form method="post" action="{% url 'turnos:baja' i.pk %}"
+            onsubmit="return confirm('¿Dar de baja a {{ i.alumno|escapejs }} de esta clase?')">
+        {% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">
+        <button class="link peligro">Dar de baja</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="vacio">Sin inscriptos.</p>{% endif %}
+
+  {% if not clase.cancelada %}
+  <h2>Asignar alumno</h2>
+  <form method="post" action="{% url 'turnos:asignar' fecha hora %}" class="fila-form"
+        {% if lleno %}onsubmit="return confirm('La clase está completa ({{ ocupados }}/{{ cupo }}). ¿Asignar igual en SOBRECUPO?')"{% endif %}>
+    {% csrf_token %}
+    {{ form.alumno }}
+    <button class="primario">Asignar{% if lleno %} (sobrecupo){% endif %}</button>
+  </form>
+  {% endif %}
+
+  <form method="post" action="{% url 'turnos:cancelar_clase' fecha hora %}" class="pie-detalle"
+        {% if not clase.cancelada %}onsubmit="return confirm('¿Cancelar esta clase (feriado, mantenimiento)? Los inscriptos no se borran.')"{% endif %}>
+    {% csrf_token %}
+    <button class="secundario">{% if clase.cancelada %}Reactivar clase{% else %}Cancelar clase{% endif %}</button>
+  </form>
+</section>
+{% endblock %}

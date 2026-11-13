@@ -1,0 +1,44 @@
+<script>
+(() => {
+  const esStaff = {{ user.is_staff|yesno:"true,false" }};
+  const dlg = document.getElementById("modal-cambio");
+  const form = document.getElementById("form-cambio");
+  const sel = document.getElementById("origen");
+  const optPerm = document.getElementById("opcion-permanente");
+
+  function actualizarOrigen() {
+    form.action = sel.value;
+    // El cambio permanente solo aplica a turnos que vienen de la semana tipo
+    const fijo = sel.selectedOptions[0]?.dataset.fijo === "1";
+    optPerm.hidden = !fijo;
+    if (!fijo) form.querySelector('[value="PUNTUAL"]').checked = true;
+  }
+
+  document.addEventListener("click", (e) => {
+    if (e.target.matches("[data-cerrar]")) { e.target.closest("dialog").close(); return; }
+    const f = e.target.closest(".franja");
+    if (!f || f.disabled) return;
+
+    if (esStaff) { location.href = f.dataset.url; return; }
+
+    if (f.dataset.mia) return;
+    if (["lleno", "sobrecupo"].includes(f.dataset.nivel)) {
+      alert("Esa clase no tiene lugares disponibles."); return;
+    }
+    if (!sel || !sel.options.length) {
+      alert("No tenés turnos que puedas mover en esta semana (los cambios se hacen con anticipación).");
+      return;
+    }
+    document.getElementById("destino-fecha").value = f.dataset.fecha;
+    document.getElementById("destino-hora").value = f.dataset.hora;
+    document.getElementById("destino-texto").textContent = f.dataset.texto;
+    // Preselecciona el turno del mismo día, si lo hay
+    const mismoDia = [...sel.options].find(o => o.dataset.fecha === f.dataset.fecha);
+    if (mismoDia) mismoDia.selected = true;
+    actualizarOrigen();
+    dlg.showModal();
+  });
+
+  sel?.addEventListener("change", actualizarOrigen);
+})();
+</script>

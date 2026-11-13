@@ -1,0 +1,35 @@
+{% if not user.is_staff %}
+<dialog id="modal-cambio" class="modal">
+  <form method="post" id="form-cambio">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <input type="hidden" name="fecha" id="destino-fecha">
+    <input type="hidden" name="hora" id="destino-hora">
+
+    <h2>Cambiar turno</h2>
+    <p>Nuevo horario: <strong id="destino-texto"></strong></p>
+
+    <label>Turno que querés mover
+      <select id="origen">
+        {% for i in mis_turnos %}
+          <option value="{% url 'turnos:cambiar' i.pk %}" data-fecha="{{ i.fecha|date:'Y-m-d' }}"
+                  data-fijo="{% if i.horario_origen_id %}1{% endif %}">
+            {{ i.fecha|date:"l j/m"|capfirst }} · {{ i.clase.hora|stringformat:"02d" }}:00
+          </option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <fieldset>
+      <legend>¿Por cuánto tiempo?</legend>
+      <label><input type="radio" name="alcance" value="PUNTUAL" checked> Solo este día</label>
+      <label id="opcion-permanente"><input type="radio" name="alcance" value="PERMANENTE"> Por el resto del mes <small>(cambia tu semana tipo)</small></label>
+    </fieldset>
+
+    <menu>
+      <button type="button" class="secundario" data-cerrar>Cancelar</button>
+      <button type="submit" class="primario">Confirmar cambio</button>
+    </menu>
+  </form>
+</dialog>
+{% endif %}

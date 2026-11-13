@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block titulo %}Semana {{ dias.0|date:"j/m" }}{% endblock %}
+{% block contenido %}
+<div class="nav-fecha">
+  <a href="{% url 'turnos:semana' anterior %}" aria-label="Semana anterior">‹</a>
+  <h1>Semana del {{ dias.0|date:"j/m" }} al {{ dias|last|date:"j/m" }}</h1>
+  <a href="{% url 'turnos:semana' siguiente %}" aria-label="Semana siguiente">›</a>
+</div>
+<div class="scroll-x">
+  <div class="grilla-semana">
+    <div></div>
+    {% for d in dias %}
+      <a class="cabecera" href="{% url 'turnos:dia' d %}">{{ d|date:"D j"|capfirst }}</a>
+    {% endfor %}
+    {% for hora, franjas in filas %}
+      <div class="hora">{{ hora|stringformat:"02d" }}:00</div>
+      {% for f in franjas %}{% include "turnos/_franja.html" with compacta=True %}{% endfor %}
+    {% endfor %}
+  </div>
+</div>
+{% include "turnos/_modal_cambio.html" %}
+{% endblock %}
+{% block scripts %}{% include "turnos/_script_franjas.html" %}{% endblock %}

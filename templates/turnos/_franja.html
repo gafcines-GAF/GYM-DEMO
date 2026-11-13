@@ -1,0 +1,16 @@
+<button type="button"
+  class="franja nivel-{{ f.nivel }}{% if f.es_mia %} franja--mia{% endif %}{% if f.cancelada %} franja--cancelada{% endif %}{% if not f.editable %} franja--bloqueada{% endif %}"
+  style="--pct: {{ f.pct }}%"
+  data-fecha="{{ f.fecha|date:'Y-m-d' }}" data-hora="{{ f.hora }}" data-nivel="{{ f.nivel }}"
+  data-texto="{{ f.fecha|date:'l j/m' }} {{ f.hora|stringformat:'02d' }}:00"
+  {% if user.is_staff %}data-url="{% url 'turnos:clase' f.fecha f.hora %}"{% endif %}
+  {% if f.es_mia %}data-mia="1"{% endif %}{% if f.cancelada %} data-cancelada="1"{% endif %}
+  {% if not f.editable %}disabled{% endif %}
+  aria-label="{{ f.hora }}:00, {{ f.ocupados }} de {{ f.cupo }}, {{ f.etiqueta }}{% if f.es_mia %}, tu turno{% endif %}">
+  <span class="franja__hora">{{ f.hora|stringformat:"02d" }}:00</span>
+  {% if not compacta %}<span class="franja__estado">{{ f.etiqueta }}</span>{% endif %}
+  <span class="franja__cupo">{% if f.cancelada %}—{% else %}{{ f.ocupados }}/{{ f.cupo }}{% endif %}</span>
+  {% if f.nivel == "sobrecupo" %}<span class="franja__alerta" title="Sobrecupo">⚠</span>{% endif %}
+  {% if f.es_mia %}<span class="franja__badge">Tu turno</span>{% endif %}
+  <span class="franja__barra"><span></span></span>
+</button>
