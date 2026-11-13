@@ -2,3 +2,8 @@
 __pycache__/
 *.pyc
 db.sqlite3
+# Imágenes subidas por el usuario (las originales sí se versionan)
+media/*
+!media/sitio/
+media/sitio/*
+!media/sitio/default/

@@ -26,6 +26,8 @@ Abrir http://localhost:8000
 
 - `manage.py generar_mes [--anio A --mes M]`: replica la semana tipo (por defecto el mes siguiente).
   Idempotente; programarlo el día 25 de cada mes. También hay un botón en la vista Mes (profesores).
+- `manage.py crear_imagenes_base [--forzar]`: vuelve a generar el logo, encabezado y pie
+  originales en `media/sitio/default/` (diseños propios, sin derechos de terceros).
 - `manage.py test turnos`: tests de reglas de negocio, vistas y admin.
 
 ## Estructura
@@ -39,6 +41,13 @@ Abrir http://localhost:8000
 | `turnos/admin.py` | Admin: parámetros, alta de alumno + usuario + semana tipo, clases, inscripciones |
 | `templates/` | Vistas y modal de cambio |
 | `turnos/static/turnos/turnos.css` | Colores por ocupación (verde / amarillo / rojo / sobrecupo) |
+
+## Apariencia (logo, encabezado y pie)
+
+Las pantallas de usuarios logueados muestran un encabezado y un pie con imagen, más el logo.
+Se cambian desde **Admin → Parámetros del gimnasio → Apariencia** (también el nombre y el texto
+del pie). Las imágenes subidas se guardan en `media/sitio/`; al reemplazar una se borra la anterior.
+La casilla «Restaurar imágenes originales» vuelve a las de `media/sitio/default/`.
 
 ## Reglas implementadas
 

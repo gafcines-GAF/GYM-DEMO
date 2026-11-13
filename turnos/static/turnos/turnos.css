@@ -13,18 +13,61 @@
 body {
   margin: 0; background: var(--fondo); color: var(--texto);
   font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh; display: flex; flex-direction: column;   /* pie siempre abajo */
 }
-main { max-width: 1100px; margin: 0 auto; padding: 1rem; }
+main { max-width: 1100px; width: 100%; margin: 0 auto; padding: 1rem; flex: 1; }
 a { color: var(--mia); }
 h1 { font-size: 1.35rem; margin: 0; }
 h2 { font-size: 1.05rem; margin: 1.4rem 0 .6rem; }
 
-/* ── Barra superior ───────────────────────────────────────── */
-.barra {
+/* ── Encabezado con imagen (usuarios logueados) ───────────── */
+.encabezado {
   display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1.5rem;
-  padding: .7rem 1rem; background: var(--superficie); border-bottom: 1px solid var(--linea);
+  min-height: 120px; padding: 1rem clamp(1rem, 4vw, 2.5rem);
+  /* velo oscuro a la izquierda para que el texto se lea sobre cualquier imagen */
+  background:
+    linear-gradient(90deg, rgb(10 18 30 / .72), rgb(10 18 30 / .25) 60%, transparent),
+    var(--img-encabezado) center / cover no-repeat, #14243a;
+  color: #fff;
 }
-.marca { font-weight: 700; text-decoration: none; color: var(--texto); }
+.encabezado__marca {
+  display: flex; align-items: center; gap: .9rem;
+  color: #fff; text-decoration: none; font-size: 1.5rem; font-weight: 800; letter-spacing: .01em;
+  text-shadow: 0 2px 6px rgb(0 0 0 / .45);
+}
+.encabezado__logo {
+  width: 72px; height: 72px; object-fit: contain; border-radius: 50%;
+  filter: drop-shadow(0 3px 8px rgb(0 0 0 / .4));
+}
+.encabezado .usuario {
+  color: #fff; background: rgb(10 18 30 / .55); padding: .4rem .8rem; border-radius: 999px;
+  backdrop-filter: blur(4px);
+}
+.encabezado .usuario a, .encabezado .usuario .link { color: #fff; }
+
+/* ── Pie con imagen ───────────────────────────────────────── */
+.pie {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1.2rem;
+  min-height: 110px; padding: 1.2rem clamp(1rem, 4vw, 2.5rem); margin-top: 1rem;
+  background:
+    linear-gradient(rgb(10 18 30 / .45), rgb(10 18 30 / .45)),
+    var(--img-pie) center / cover no-repeat, #0c1420;
+  color: #e8eef5;
+}
+.pie div { display: grid; }
+.pie strong { font-size: 1.05rem; }
+.pie span { opacity: .85; font-size: .9rem; }
+.pie small { margin-left: auto; opacity: .7; }
+.pie__logo { width: 48px; height: 48px; object-fit: contain; border-radius: 50%; }
+
+/* ── Barra de vistas ──────────────────────────────────────── */
+.barra {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .75rem 1.5rem;
+  padding: .55rem 1rem; background: var(--superficie); border-bottom: 1px solid var(--linea);
+}
+.barra--simple { justify-content: flex-start; }
+.marca { display: flex; align-items: center; gap: .5rem; font-weight: 700; color: var(--texto); }
+.marca__logo { width: 32px; height: 32px; object-fit: contain; }
 .tabs { display: flex; gap: 2px; background: var(--fondo); padding: 3px; border-radius: 9px; }
 .tabs a {
   padding: .35rem .9rem; border-radius: 7px; text-decoration: none; color: var(--tenue); font-weight: 600;
@@ -189,7 +232,11 @@ a.cabecera:hover { text-decoration: underline; }
 
 /* ── Celulares ────────────────────────────────────────────── */
 @media (max-width: 600px) {
-  .usuario { margin-left: 0; width: 100%; }
+  .usuario { margin-left: 0; }
+  .encabezado { min-height: 90px; }
+  .encabezado__marca { font-size: 1.15rem; }
+  .encabezado__logo { width: 52px; height: 52px; }
+  .pie small { margin-left: 0; width: 100%; }
   .nav-fecha h1 { min-width: 0; font-size: 1.1rem; }
   .grilla-mes { gap: 3px; }
   .dia-mes { padding: .3rem; min-height: 4.5rem; }

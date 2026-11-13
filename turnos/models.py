@@ -19,6 +19,23 @@ def calcular_nivel(ocupados: int, cupo: int, umbral: int) -> str:
     return "libre"
 
 
+IMAGENES_BASE = {
+    "logo": "sitio/default/logo.png",
+    "imagen_encabezado": "sitio/default/encabezado.jpg",
+    "imagen_pie": "sitio/default/pie.jpg",
+}
+MAX_IMAGEN_MB = 5
+
+
+def validar_imagen(archivo):
+    try:
+        tamano = archivo.size
+    except (OSError, ValueError):     # archivo base ausente: no bloquear el guardado
+        return
+    if tamano > MAX_IMAGEN_MB * 1024 * 1024:
+        raise ValidationError(f"La imagen no puede superar {MAX_IMAGEN_MB} MB.")
+
+
 # ──────────────────────────────────────────────────────────────
 # 1. Parámetros globales (fila única)
 # ──────────────────────────────────────────────────────────────
@@ -43,6 +60,26 @@ class ParametrosGimnasio(models.Model):
         help_text="Días mínimos de anticipación para que un alumno cambie un turno.",
     )
 
+    # ── Apariencia del sitio ──
+    nombre_gimnasio = models.CharField("nombre del gimnasio", max_length=80, default="Gimnasio")
+    logo = models.ImageField(
+        upload_to="sitio/", default=IMAGENES_BASE["logo"], validators=[validar_imagen],
+        help_text="Cuadrada, idealmente PNG con fondo transparente (mín. 256×256).",
+    )
+    imagen_encabezado = models.ImageField(
+        "imagen del encabezado", upload_to="sitio/", default=IMAGENES_BASE["imagen_encabezado"],
+        validators=[validar_imagen],
+        help_text="Apaisada, recomendado 1920×360. Se recorta para ocupar todo el ancho.",
+    )
+    imagen_pie = models.ImageField(
+        "imagen del pie de página", upload_to="sitio/", default=IMAGENES_BASE["imagen_pie"],
+        validators=[validar_imagen], help_text="Apaisada, recomendado 1920×220.",
+    )
+    texto_pie = models.CharField(
+        "texto del pie de página", max_length=200, blank=True,
+        default="Lunes a viernes de 07:00 a 22:00",
+    )
+
     class Meta:
         verbose_name = verbose_name_plural = "Parámetros del gimnasio"
 
@@ -51,7 +88,19 @@ class ParametrosGimnasio(models.Model):
 
     def save(self, *args, **kwargs):
         self.pk = 1
+        anterior = ParametrosGimnasio.objects.filter(pk=1).first()
         super().save(*args, **kwargs)
+        if anterior:
+            # Borra del disco la imagen reemplazada (nunca las originales)
+            for campo in IMAGENES_BASE:
+                vieja, nueva = getattr(anterior, campo), getattr(self, campo)
+                if vieja.name and vieja.name != nueva.name and not vieja.name.startswith("sitio/default/"):
+                    vieja.storage.delete(vieja.name)
+
+    def restaurar_imagenes(self):
+        for campo, ruta in IMAGENES_BASE.items():
+            setattr(self, campo, ruta)
+        self.save()
 
     def delete(self, *args, **kwargs):
         pass

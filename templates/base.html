@@ -3,27 +3,37 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block titulo %}Turnos{% endblock %} · Gimnasio</title>
+  <title>{% block titulo %}Turnos{% endblock %} · {{ sitio.nombre_gimnasio }}</title>
+  <link rel="icon" href="{{ sitio.logo.url }}">
   <link rel="stylesheet" href="{% static 'turnos/turnos.css' %}">
 </head>
 <body>
-  <header class="barra">
-    <a class="marca" href="{% url 'turnos:inicio' %}">🏋️ Gimnasio</a>
-    {% if user.is_authenticated and fecha %}
-    <nav class="tabs" aria-label="Vista">
-      <a href="{% url 'turnos:dia' fecha %}" class="{% if vista == 'dia' %}activa{% endif %}">Día</a>
-      <a href="{% url 'turnos:semana' fecha %}" class="{% if vista == 'semana' %}activa{% endif %}">Semana</a>
-      <a href="{% url 'turnos:mes' fecha.year fecha.month %}" class="{% if vista == 'mes' %}activa{% endif %}">Mes</a>
-    </nav>
-    {% endif %}
-    {% if user.is_authenticated %}
+{% if user.is_authenticated %}
+  <header class="encabezado" style="--img-encabezado: url('{{ sitio.imagen_encabezado.url }}')">
+    <a class="encabezado__marca" href="{% url 'turnos:inicio' %}">
+      <img src="{{ sitio.logo.url }}" alt="" class="encabezado__logo">
+      <span>{{ sitio.nombre_gimnasio }}</span>
+    </a>
     <div class="usuario">
       <span>{{ user.get_full_name|default:user.username }}{% if user.is_staff %} · <em>Profesor</em>{% endif %}</span>
       {% if user.is_staff %}<a href="{% url 'admin:index' %}">Admin</a>{% endif %}
       <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="link">Salir</button></form>
     </div>
-    {% endif %}
   </header>
+  {% if fecha %}
+  <nav class="barra" aria-label="Vista">
+    <div class="tabs">
+      <a href="{% url 'turnos:dia' fecha %}" class="{% if vista == 'dia' %}activa{% endif %}">Día</a>
+      <a href="{% url 'turnos:semana' fecha %}" class="{% if vista == 'semana' %}activa{% endif %}">Semana</a>
+      <a href="{% url 'turnos:mes' fecha.year fecha.month %}" class="{% if vista == 'mes' %}activa{% endif %}">Mes</a>
+    </div>
+  </nav>
+  {% endif %}
+{% else %}
+  <header class="barra barra--simple">
+    <span class="marca"><img src="{{ sitio.logo.url }}" alt="" class="marca__logo">{{ sitio.nombre_gimnasio }}</span>
+  </header>
+{% endif %}
 
   {% if messages %}
   <div class="avisos">
@@ -33,7 +43,7 @@
 
   <main>{% block contenido %}{% endblock %}</main>
 
-  {% if user.is_authenticated %}
+{% if user.is_authenticated %}
   <ul class="leyenda" aria-label="Referencias">
     <li><span class="punto nivel-libre"></span>Disponible</li>
     <li><span class="punto nivel-medio"></span>Pocos lugares</li>
@@ -41,7 +51,16 @@
     {% if user.is_staff %}<li><span class="punto nivel-sobrecupo"></span>Sobrecupo</li>{% endif %}
     <li><span class="punto punto--mia"></span>Tu turno</li>
   </ul>
-  {% endif %}
+
+  <footer class="pie" style="--img-pie: url('{{ sitio.imagen_pie.url }}')">
+    <img src="{{ sitio.logo.url }}" alt="" class="pie__logo">
+    <div>
+      <strong>{{ sitio.nombre_gimnasio }}</strong>
+      {% if sitio.texto_pie %}<span>{{ sitio.texto_pie }}</span>{% endif %}
+    </div>
+    <small>© {% now "Y" %}</small>
+  </footer>
+{% endif %}
 
   {% block scripts %}{% endblock %}
 </body>

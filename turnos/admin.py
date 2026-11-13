@@ -12,10 +12,52 @@ User = get_user_model()
 
 
 # ── Parámetros (fila única) ───────────────────────────────────
+class ParametrosForm(forms.ModelForm):
+    restaurar_imagenes = forms.BooleanField(
+        label="Restaurar imágenes originales", required=False,
+        help_text="Vuelve al logo, encabezado y pie que trae el sistema.",
+    )
+
+    class Meta:
+        model = ParametrosGimnasio
+        fields = "__all__"
+
+
+def _vista_previa(campo, alto):
+    @admin.display(description="Vista previa")
+    def mostrar(self, obj):
+        imagen = getattr(obj, campo)
+        if not imagen:
+            return "—"
+        return format_html('<img src="{}" style="max-height:{}px;max-width:100%;border-radius:6px;'
+                           'border:1px solid #ccc">', imagen.url, alto)
+    return mostrar
+
+
 @admin.register(ParametrosGimnasio)
 class ParametrosAdmin(admin.ModelAdmin):
+    form = ParametrosForm
     list_display = ["__str__", "cupo_maximo", "hora_apertura", "hora_cierre",
                     "umbral_amarillo", "dias_anticipacion_cambio"]
+    readonly_fields = ["previa_logo", "previa_encabezado", "previa_pie"]
+    fieldsets = [
+        ("Turnos", {"fields": ["cupo_maximo", "hora_apertura", "hora_cierre",
+                               "umbral_amarillo", "dias_anticipacion_cambio"]}),
+        ("Apariencia", {"fields": ["nombre_gimnasio",
+                                   "logo", "previa_logo",
+                                   "imagen_encabezado", "previa_encabezado",
+                                   "imagen_pie", "previa_pie",
+                                   "texto_pie", "restaurar_imagenes"]}),
+    ]
+
+    previa_logo = _vista_previa("logo", 96)
+    previa_encabezado = _vista_previa("imagen_encabezado", 90)
+    previa_pie = _vista_previa("imagen_pie", 60)
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if form.cleaned_data.get("restaurar_imagenes"):
+            obj.restaurar_imagenes()
 
     def has_add_permission(self, request):
         return not ParametrosGimnasio.objects.exists()
