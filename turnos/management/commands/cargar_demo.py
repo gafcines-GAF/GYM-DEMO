@@ -3,7 +3,9 @@ import random
 from collections import Counter
 from datetime import timedelta
 
+from django.apps import apps
 from django.contrib.auth import get_user_model
+from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
@@ -33,6 +35,9 @@ class Command(BaseCommand):
         rnd = random.Random(42)
         params = ParametrosGimnasio.load()
 
+        finanzas = apps.is_installed("finanzas")
+        if finanzas:      # las cuotas protegen a los alumnos: se limpian primero
+            call_command("cargar_demo_finanzas", limpiar=True)
         Inscripcion.objects.all().delete()
         Clase.objects.all().delete()
         Alumno.objects.all().delete()
@@ -79,6 +84,9 @@ class Command(BaseCommand):
             extra = Alumno.objects.exclude(inscripciones__fecha=llena.fecha).first()
             if extra:
                 services.asignar_por_profesor(profe, extra, llena.fecha, llena.hora)
+
+        if finanzas:
+            call_command("cargar_demo_finanzas", stdout=self.stdout._out)
 
         self.stdout.write(self.style.SUCCESS(
             f"Listo: {Alumno.objects.count()} alumnos, {total} inscripciones.\n"

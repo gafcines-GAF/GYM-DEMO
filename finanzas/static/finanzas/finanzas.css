@@ -1,0 +1,130 @@
+/* Módulo de finanzas: reutiliza variables y clases .nivel-* de turnos.css */
+
+.subnav {
+  display: flex; flex-wrap: wrap; gap: .3rem; margin-bottom: 1.2rem;
+  padding-bottom: .6rem; border-bottom: 1px solid var(--linea);
+}
+.subnav a {
+  padding: .35rem .85rem; border-radius: 8px; text-decoration: none; color: var(--tenue); font-weight: 600;
+}
+.subnav a:hover { background: var(--superficie); }
+.subnav a.activa { background: var(--mia); color: #fff; }
+.subnav__volver { margin-left: auto; }
+
+.cab-dashboard { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.cab-dashboard .nav-fecha { margin: 0; }
+.cab-dashboard form { margin: 0; }
+
+h2 small, .tenue { color: var(--tenue); font-weight: 400; }
+.tenue { margin: .2rem 0; }
+.chico { font-size: .85rem; }
+.vacio { color: var(--tenue); }
+.bloque { margin-bottom: 1rem; }
+.bloque h2 { margin-top: 0; }
+.bloque__cab { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.angosto { max-width: 640px; margin: 0 auto; }
+a.primario, a.secundario { display: inline-block; text-decoration: none; }
+.primario.chico { padding: .3rem .7rem; font-size: .85rem; }
+.en-linea { display: inline; margin: 0; }
+
+/* ── KPIs ───────────────────────────────────────────────── */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: .8rem; margin-bottom: 1rem; }
+.kpi {
+  background: var(--superficie); border: 1px solid var(--linea); border-radius: 14px; padding: 1rem 1.1rem;
+  border-top: 5px solid var(--mia);
+}
+.kpi h2 { margin: 0; font-size: .85rem; text-transform: uppercase; letter-spacing: .04em; color: var(--tenue); }
+.kpi__valor { margin: .35rem 0 .2rem; font-size: 1.9rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.kpi__sub { margin: 0; color: var(--tenue); font-size: .88rem; }
+.kpi--alerta { border-top-color: var(--sobre-borde); }
+.kpi--alerta .kpi__valor { color: var(--lleno-txt); }
+.kpi--aviso { border-top-color: var(--medio-borde); background: var(--medio-bg); }
+.sube { color: #2d6a4f; font-weight: 700; }
+.baja { color: var(--sobre-borde); font-weight: 700; }
+.medidor { height: 8px; border-radius: 4px; background: var(--fondo); overflow: hidden; margin: .2rem 0 .4rem; }
+.medidor > span { display: block; height: 100%; width: var(--pct); background: var(--libre-borde); }
+
+/* ── Barra de estado de alumnos ─────────────────────────── */
+.barra-estado { display: flex; height: 26px; border-radius: 8px; overflow: hidden; gap: 2px; background: var(--fondo); }
+.barra-estado > span { background: var(--bg); border: 1px solid var(--borde); min-width: 6px; }
+.leyenda-fin { display: flex; flex-wrap: wrap; gap: .4rem 1.4rem; list-style: none; padding: 0; margin: .7rem 0 0; }
+.leyenda-fin li { display: flex; align-items: center; gap: .4rem; }
+.leyenda-fin small { color: var(--tenue); }
+
+/* ── Gráficos ───────────────────────────────────────────── */
+.dos-columnas { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; }
+.dos-columnas .bloque { margin-bottom: 0; }
+.dos-columnas + .bloque { margin-top: 1rem; }
+.grafico-barras { display: grid; grid-template-columns: repeat(6, 1fr); gap: .5rem; height: 190px; align-items: end; }
+.grafico-barras__col { display: grid; grid-template-rows: auto 1fr auto; height: 100%; text-align: center; gap: .25rem; }
+.grafico-barras__valor { font-size: .72rem; color: var(--tenue); white-space: nowrap; }
+.grafico-barras__barra {
+  align-self: end; height: max(var(--pct), 2px); border-radius: 6px 6px 0 0;
+  background: var(--libre-borde);
+}
+.grafico-barras__col.actual .grafico-barras__barra { background: var(--mia); }
+.grafico-barras__col.actual .grafico-barras__valor { color: var(--texto); font-weight: 700; }
+.grafico-barras__mes { font-size: .8rem; color: var(--tenue); text-transform: capitalize; }
+
+.metodos { list-style: none; padding: 0; margin: 0; display: grid; gap: .6rem; }
+.metodos li { display: grid; grid-template-columns: 11rem 1fr auto; gap: .7rem; align-items: center; }
+.metodos__barra { height: 12px; border-radius: 6px; background: var(--fondo); overflow: hidden; }
+.metodos__barra > span { display: block; height: 100%; width: var(--pct); background: var(--mia); }
+.metodos b { font-variant-numeric: tabular-nums; }
+
+/* ── Tablas ─────────────────────────────────────────────── */
+.tabla { width: 100%; border-collapse: collapse; background: var(--superficie); font-size: .92rem; }
+.tabla th, .tabla td { padding: .55rem .6rem; border-bottom: 1px solid var(--linea); text-align: left; vertical-align: top; }
+.tabla th { font-size: .8rem; text-transform: uppercase; letter-spacing: .03em; color: var(--tenue); }
+.tabla .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tabla tr.anulada td { color: var(--tenue); text-decoration: line-through; }
+.tabla tr.anulada td:last-child, .tabla tr.anulada td:nth-child(2) { text-decoration: none; }
+
+.estado {
+  display: inline-block; padding: .1rem .55rem; border-radius: 999px; font-size: .8rem; font-weight: 600;
+  background: var(--bg, #eceff1); color: var(--txt, #66727f); border: 1px solid var(--borde, #c5ccd3);
+}
+.pago { font-size: .85rem; }
+.pago--anulado { color: var(--tenue); text-decoration: line-through; }
+
+/* ── Ficha del alumno ───────────────────────────────────── */
+.deuda-total {
+  display: grid; text-align: right; padding: .6rem 1rem; border-radius: 12px;
+  background: var(--bg); color: var(--txt); border: 2px solid var(--borde);
+}
+.deuda-total b { font-size: 1.6rem; }
+.acciones { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .8rem; }
+.acciones form { margin: 0; }
+
+.cuotas-impagas { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+.cuota { border-top: 6px solid var(--borde); }
+.cuota__cab { display: flex; justify-content: space-between; align-items: center; }
+.cuota__cab h3 { margin: 0; }
+.cuota__detalle { display: grid; grid-template-columns: auto 1fr; gap: .25rem .8rem; margin: .8rem 0; }
+.cuota__detalle dt { color: var(--tenue); }
+.cuota__detalle dd { margin: 0; }
+.aviso-recargo { color: var(--lleno-txt); }
+.form-pago { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem .7rem; }
+.form-pago label { display: grid; gap: .2rem; font-size: .85rem; color: var(--tenue); }
+.form-pago .ancho { grid-column: 1 / -1; }
+.form-pago input, .form-pago select, .form-pago textarea,
+.fila-form input[type=search] {
+  font: inherit; color: var(--texto); padding: .45rem .55rem; border: 1px solid var(--linea); border-radius: 8px; width: 100%;
+}
+.fila-form input[type=search] { flex: 1; min-width: 12rem; }
+
+.lista-alumnos { list-style: none; padding: 0; margin: 1rem 0 0; }
+.lista-alumnos a {
+  display: flex; justify-content: space-between; gap: 1rem; padding: .6rem .4rem;
+  border-bottom: 1px solid var(--linea); color: var(--texto); text-decoration: none;
+}
+.lista-alumnos a:hover { background: var(--fondo); }
+.lista-alumnos small { color: var(--tenue); }
+
+@media (max-width: 600px) {
+  .metodos li { grid-template-columns: 1fr auto; }
+  .metodos__barra { grid-column: 1 / -1; grid-row: 2; }
+  .form-pago { grid-template-columns: 1fr; }
+  .deuda-total { text-align: left; }
+  .subnav__volver { margin-left: 0; }
+}

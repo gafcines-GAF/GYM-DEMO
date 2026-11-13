@@ -128,6 +128,32 @@ class DiaSemana(models.IntegerChoices):
 
 
 # ──────────────────────────────────────────────────────────────
+# Profesor: nivel de acceso (lo usan otras apps, p. ej. finanzas)
+# ──────────────────────────────────────────────────────────────
+class PerfilProfesor(models.Model):
+    usuario = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="perfil_profesor"
+    )
+    nivel = models.PositiveSmallIntegerField(
+        default=1, validators=[MinValueValidator(1), MaxValueValidator(10)],
+        help_text="1 a 10. Algunos módulos exigen un nivel mínimo.",
+    )
+
+    class Meta:
+        verbose_name = "perfil de profesor"
+        verbose_name_plural = "perfiles de profesor"
+
+    def __str__(self):
+        return f"{self.usuario} (nivel {self.nivel})"
+
+
+def nivel_profesor(usuario) -> int:
+    """Nivel del profesor; 0 si no tiene perfil."""
+    perfil = getattr(usuario, "perfil_profesor", None)
+    return perfil.nivel if perfil else 0
+
+
+# ──────────────────────────────────────────────────────────────
 # 2. Alumno
 # ──────────────────────────────────────────────────────────────
 class Alumno(models.Model):

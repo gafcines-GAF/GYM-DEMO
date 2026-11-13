@@ -6,6 +6,7 @@
   <title>{% block titulo %}Turnos{% endblock %} · {{ sitio.nombre_gimnasio }}</title>
   <link rel="icon" href="{{ sitio.logo.url }}">
   <link rel="stylesheet" href="{% static 'turnos/turnos.css' %}">
+  {% block estilos %}{% endblock %}
 </head>
 <body>
 {% if user.is_authenticated %}
@@ -16,6 +17,7 @@
     </a>
     <div class="usuario">
       <span>{{ user.get_full_name|default:user.username }}{% if user.is_staff %} · <em>Profesor</em>{% endif %}</span>
+      {% if ve_finanzas %}<a href="{% url 'finanzas:dashboard' %}">Finanzas</a>{% endif %}
       {% if user.is_staff %}<a href="{% url 'admin:index' %}">Admin</a>{% endif %}
       <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="link">Salir</button></form>
     </div>
@@ -44,6 +46,7 @@
   <main>{% block contenido %}{% endblock %}</main>
 
 {% if user.is_authenticated %}
+  {% block leyenda %}
   <ul class="leyenda" aria-label="Referencias">
     <li><span class="punto nivel-libre"></span>Disponible</li>
     <li><span class="punto nivel-medio"></span>Pocos lugares</li>
@@ -51,6 +54,7 @@
     {% if user.is_staff %}<li><span class="punto nivel-sobrecupo"></span>Sobrecupo</li>{% endif %}
     <li><span class="punto punto--mia"></span>Tu turno</li>
   </ul>
+  {% endblock %}
 
   <footer class="pie" style="--img-pie: url('{{ sitio.imagen_pie.url }}')">
     <img src="{{ sitio.logo.url }}" alt="" class="pie__logo">

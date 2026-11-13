@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load static %}
+{% block estilos %}<link rel="stylesheet" href="{% static 'finanzas/finanzas.css' %}">{% endblock %}
+{% block leyenda %}{% endblock %}
+{% block contenido %}
+<nav class="subnav" aria-label="Finanzas">
+  <a href="{% url 'finanzas:dashboard' %}" class="{% if seccion == 'dashboard' %}activa{% endif %}">Dashboard</a>
+  <a href="{% url 'finanzas:buscar' %}" class="{% if seccion == 'cobrar' %}activa{% endif %}">Cobrar</a>
+  <a href="{% url 'admin:finanzas_tarifa_changelist' %}">Tarifas</a>
+  <a href="{% url 'admin:finanzas_parametrosfinanzas_changelist' %}">Parámetros</a>
+  <a href="{% url 'turnos:inicio' %}" class="subnav__volver">← Turnos</a>
+</nav>
+{% block finanzas %}{% endblock %}
+{% endblock %}

@@ -214,3 +214,31 @@ class InscripcionAdmin(admin.ModelAdmin):
 admin.site.site_header = "Gimnasio · Administración"
 admin.site.site_title = "Gimnasio"
 admin.site.index_title = "Gestión de turnos"
+
+
+# ── Usuarios con nivel de profesor ────────────────────────────
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin  # noqa: E402
+
+from .models import PerfilProfesor  # noqa: E402
+
+
+class PerfilProfesorInline(admin.StackedInline):
+    model = PerfilProfesor
+    can_delete = False
+    extra = 0
+    max_num = 1
+    verbose_name_plural = "Nivel de profesor"
+
+
+admin.site.unregister(User)
+
+
+@admin.register(User)
+class UsuarioAdmin(BaseUserAdmin):
+    inlines = [PerfilProfesorInline]
+    list_display = ["username", "first_name", "last_name", "is_staff", "nivel"]
+
+    @admin.display(description="Nivel", ordering="perfil_profesor__nivel")
+    def nivel(self, obj):
+        perfil = getattr(obj, "perfil_profesor", None)
+        return perfil.nivel if perfil else "—"

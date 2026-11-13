@@ -210,6 +210,8 @@ class AdminAlumnoTests(Base):
         d = {"username": "nuevo", "password": "clave-segura-1", "first_name": "Nuevo",
              "last_name": "Alumno", "email": "", "dias_por_semana": 2, "telefono": "", "activo": "on",
              "horarios-TOTAL_FORMS": 3, "horarios-INITIAL_FORMS": 0,
+             # Inline de descuentos que agrega la app finanzas (visible para superusuarios)
+             "descuentos-TOTAL_FORMS": 0, "descuentos-INITIAL_FORMS": 0,
              "horarios-0-dia_semana": 0, "horarios-0-hora": 18, "horarios-0-vigente_desde": "2026-01-01",
              "horarios-1-dia_semana": 2, "horarios-1-hora": 18, "horarios-1-vigente_desde": "2026-01-01"}
         d.update(extra)

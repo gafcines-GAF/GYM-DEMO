@@ -19,7 +19,9 @@ Abrir http://localhost:8000
 
 | Rol | Usuario | Contraseña |
 |---|---|---|
-| Profesor (superusuario) | `profesor` | `demo1234` |
+| Profesor (superusuario, nivel 10) | `profesor` | `demo1234` |
+| Profesor nivel 8 (accede a Finanzas) | `profe8` | `demo1234` |
+| Profesor nivel 5 (sin acceso a Finanzas) | `profe5` | `demo1234` |
 | Alumno | `alumno` | `demo1234` |
 
 ## Comandos
@@ -28,7 +30,11 @@ Abrir http://localhost:8000
   Idempotente; programarlo el día 25 de cada mes. También hay un botón en la vista Mes (profesores).
 - `manage.py crear_imagenes_base [--forzar]`: vuelve a generar el logo, encabezado y pie
   originales en `media/sitio/default/` (diseños propios, sin derechos de terceros).
-- `manage.py test turnos`: tests de reglas de negocio, vistas y admin.
+- `manage.py generar_cuotas [--periodo AAAA-MM]`: genera las cuotas del mes (por defecto el actual)
+  para los alumnos activos. Idempotente; programarlo el día 1 de cada mes. También hay un botón en
+  el dashboard de Finanzas.
+- `manage.py cargar_demo_finanzas`: cuotas, pagos y descuentos de ejemplo (lo llama `cargar_demo`).
+- `manage.py test turnos finanzas`: tests de reglas de negocio, vistas y admin.
 
 ## Estructura
 
@@ -48,6 +54,25 @@ Las pantallas de usuarios logueados muestran un encabezado y un pie con imagen, 
 Se cambian desde **Admin → Parámetros del gimnasio → Apariencia** (también el nombre y el texto
 del pie). Las imágenes subidas se guardan en `media/sitio/`; al reemplazar una se borra la anterior.
 La casilla «Restaurar imágenes originales» vuelve a las de `media/sitio/default/`.
+
+## Módulo de finanzas (app `finanzas`)
+
+App independiente que depende de `turnos` (no al revés). En `/finanzas/`:
+
+- **Dashboard:** ingresos del mes (por fecha de pago), cobranza de las cuotas del mes, deuda vencida,
+  alumnos al día / por vencer / morosos, ingresos de los últimos 6 meses y por método, deudores con
+  el acumulado y exportación a CSV.
+- **Cobrar:** búsqueda de alumno, cuotas impagas con saldo y recargo, registro y anulación de pagos.
+- **Admin:** tarifas por días/semana (con vigencia), descuentos del alumno (en su ficha), parámetros
+  (día de vencimiento, % de recargo, nivel mínimo).
+
+Reglas: cuota completa aunque el alta sea a mitad de mes (se genera sola al dar de alta);
+descuentos % + fijos, nunca negativo; no se puede pagar más que el saldo; el recargo se aplica una vez
+si la fecha de pago es posterior al vencimiento; los pagos no se borran, se anulan con motivo.
+Acceso: superusuarios y profesores con nivel ≥ 6 (nivel en Admin → Usuarios).
+
+Archivos: `finanzas/models.py`, `services.py` (generación, pagos, recargo), `consultas.py`
+(agregaciones del dashboard), `permisos.py`, `signals.py`, `views.py`, `templates/finanzas/`.
 
 ## Reglas implementadas
 

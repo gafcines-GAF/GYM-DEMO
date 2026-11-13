@@ -1,0 +1,123 @@
+{% extends "finanzas/_base.html" %}
+{% load finanzas_tags %}
+{% block titulo %}Finanzas {{ periodo|date:"m/Y" }}{% endblock %}
+{% block finanzas %}
+<div class="cab-dashboard">
+  <div class="nav-fecha">
+    <a href="?periodo={{ anterior|date:'Y-m' }}" aria-label="Mes anterior">‹</a>
+    <h1>Finanzas · {{ periodo|date:"F Y"|capfirst }}</h1>
+    <a href="?periodo={{ siguiente|date:'Y-m' }}" aria-label="Mes siguiente">›</a>
+  </div>
+  <form method="post" action="{% url 'finanzas:generar' %}">
+    {% csrf_token %}<input type="hidden" name="periodo" value="{{ periodo|date:'Y-m' }}">
+    <button class="{% if alumnos.sin_cuota %}primario{% else %}secundario{% endif %}">Generar cuotas de {{ periodo|date:"F"|lower }}</button>
+  </form>
+</div>
+
+<section class="kpis">
+  <article class="kpi">
+    <h2>Ingresos del mes</h2>
+    <p class="kpi__valor">{{ ingresos.total|pesos }}</p>
+    <p class="kpi__sub">
+      {{ ingresos.cantidad }} pago{{ ingresos.cantidad|pluralize }}
+      {% if ingresos.variacion is not None %}
+        · <span class="{% if ingresos.variacion >= 0 %}sube{% else %}baja{% endif %}">{% if ingresos.variacion >= 0 %}▲{% else %}▼{% endif %} {{ ingresos.variacion }}%</span> vs. mes anterior
+      {% endif %}
+    </p>
+  </article>
+  <article class="kpi">
+    <h2>Cobranza de cuotas del mes</h2>
+    <p class="kpi__valor">{{ facturacion.tasa_cobranza }}%</p>
+    <div class="medidor" style="--pct: {{ facturacion.tasa_cobranza }}%"><span></span></div>
+    <p class="kpi__sub">{{ facturacion.cobrado|pesos }} de {{ facturacion.emitido|pesos }} · {{ facturacion.pagadas }}/{{ facturacion.cuotas }} pagadas</p>
+  </article>
+  <article class="kpi {% if deuda.total %}kpi--alerta{% endif %}">
+    <h2>Deuda vencida</h2>
+    <p class="kpi__valor">{{ deuda.total|pesos }}</p>
+    <p class="kpi__sub">{{ deuda.alumnos }} alumno{{ deuda.alumnos|pluralize }} moroso{{ deuda.alumnos|pluralize }}{% if parametros.recargo_porcentaje %} · recargo {{ parametros.recargo_porcentaje|floatformat:"-2" }}%{% endif %}</p>
+  </article>
+  <article class="kpi {% if alumnos.sin_cuota %}kpi--aviso{% endif %}">
+    <h2>Alumnos activos sin cuota</h2>
+    <p class="kpi__valor">{{ alumnos.sin_cuota }}</p>
+    <p class="kpi__sub">{% if alumnos.sin_cuota %}Falta generar o no hay tarifa para su plan{% else %}Todas las cuotas generadas ✓{% endif %}</p>
+  </article>
+</section>
+
+<section class="tarjeta bloque">
+  <h2>Estado de los alumnos <small>({{ alumnos.total }} activos, a hoy)</small></h2>
+  <div class="barra-estado" role="img"
+       aria-label="{{ alumnos.al_dia }} al día, {{ alumnos.por_vencer }} por vencer, {{ alumnos.morosos }} morosos">
+    {% if alumnos.al_dia %}<span class="nivel-libre" style="flex: {{ alumnos.al_dia }}"></span>{% endif %}
+    {% if alumnos.por_vencer %}<span class="nivel-medio" style="flex: {{ alumnos.por_vencer }}"></span>{% endif %}
+    {% if alumnos.morosos %}<span class="nivel-lleno" style="flex: {{ alumnos.morosos }}"></span>{% endif %}
+  </div>
+  <ul class="leyenda-fin">
+    <li><span class="punto nivel-libre"></span>Al día <b>{{ alumnos.al_dia }}</b> <small>{{ alumnos.al_dia_pct|floatformat:0 }}%</small></li>
+    <li><span class="punto nivel-medio"></span>Por vencer <b>{{ alumnos.por_vencer }}</b> <small>{{ alumnos.por_vencer_pct|floatformat:0 }}%</small></li>
+    <li><span class="punto nivel-lleno"></span>Morosos <b>{{ alumnos.morosos }}</b> <small>{{ alumnos.morosos_pct|floatformat:0 }}%</small></li>
+  </ul>
+</section>
+
+<div class="dos-columnas">
+  <section class="tarjeta bloque">
+    <h2>Ingresos últimos 6 meses</h2>
+    <div class="grafico-barras">
+      {% for m in evolucion %}
+      <div class="grafico-barras__col{% if m.mes == periodo %} actual{% endif %}" title="{{ m.mes|date:'F Y' }}: {{ m.total|pesos }}">
+        <span class="grafico-barras__valor">{{ m.total|pesos }}</span>
+        <span class="grafico-barras__barra" style="--pct: {{ m.pct }}%"></span>
+        <span class="grafico-barras__mes">{{ m.mes|date:"M" }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  <section class="tarjeta bloque">
+    <h2>Ingresos por método de pago</h2>
+    {% if ingresos.por_metodo %}
+    <ul class="metodos">
+      {% for m in ingresos.por_metodo %}
+      <li>
+        <span>{{ m.nombre }} <small>({{ m.cantidad }})</small></span>
+        <span class="metodos__barra" style="--pct: {{ m.pct }}%"><span></span></span>
+        <b>{{ m.total|pesos }}</b>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="vacio">Sin pagos registrados este mes.</p>{% endif %}
+  </section>
+</div>
+
+<section class="tarjeta bloque">
+  <div class="bloque__cab">
+    <h2>Deudores <small>({{ deuda.alumnos }})</small></h2>
+    {% if deudores %}<a class="secundario" href="{% url 'finanzas:deudores_csv' %}">Descargar CSV</a>{% endif %}
+  </div>
+  {% if deudores %}
+  <div class="scroll-x">
+  <table class="tabla">
+    <thead><tr>
+      <th>Alumno</th><th>Teléfono</th><th class="num">Cuotas</th><th>Vencida desde</th>
+      <th class="num">Deuda vencida</th><th class="num">Deuda total</th><th class="num">Recargo est.</th>
+      <th class="num">A cobrar</th><th></th>
+    </tr></thead>
+    <tbody>
+    {% for d in deudores %}
+      <tr>
+        <td>{{ d.alumno__usuario__last_name }}, {{ d.alumno__usuario__first_name }}{% if not d.alumno__activo %} <small class="etiqueta">inactivo</small>{% endif %}</td>
+        <td>{{ d.alumno__telefono|default:"—" }}</td>
+        <td class="num">{{ d.cuotas_impagas }}</td>
+        <td>{{ d.vencida_desde|date:"d/m/Y" }}</td>
+        <td class="num">{{ d.deuda_vencida|pesos }}</td>
+        <td class="num">{{ d.deuda_total|pesos }}</td>
+        <td class="num">{{ d.recargo_estimado|pesos }}</td>
+        <td class="num"><b>{{ d.a_cobrar|pesos }}</b></td>
+        <td><a class="primario chico" href="{% url 'finanzas:alumno' d.alumno_id %}">Cobrar</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if deuda.alumnos > 50 %}<p class="vacio">Se muestran los 50 con mayor deuda. El CSV tiene el listado completo.</p>{% endif %}
+  {% else %}<p class="vacio">No hay alumnos con cuotas vencidas. 🎉</p>{% endif %}
+</section>
+{% endblock %}

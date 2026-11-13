@@ -1,0 +1,23 @@
+{% extends "finanzas/_base.html" %}
+{% block titulo %}Cobrar{% endblock %}
+{% block finanzas %}
+<section class="tarjeta bloque angosto">
+  <h1>Cobrar</h1>
+  <form method="get" class="fila-form">
+    <input type="search" name="q" value="{{ q }}" placeholder="Nombre, apellido o usuario…" autofocus>
+    <button class="primario">Buscar</button>
+  </form>
+  {% if alumnos %}
+  <ul class="lista-alumnos">
+    {% for a in alumnos %}
+    <li>
+      <a href="{% url 'finanzas:alumno' a.pk %}">
+        <span>{{ a.usuario.last_name }}, {{ a.usuario.first_name }} <small>@{{ a.usuario.username }}</small></span>
+        <span>{{ a.dias_por_semana }} día{{ a.dias_por_semana|pluralize }}/sem{% if not a.activo %} · <small class="etiqueta">inactivo</small>{% endif %}</span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="vacio">No se encontraron alumnos.</p>{% endif %}
+</section>
+{% endblock %}

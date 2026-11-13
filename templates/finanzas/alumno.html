@@ -1,0 +1,100 @@
+{% extends "finanzas/_base.html" %}
+{% load finanzas_tags %}
+{% block titulo %}{{ alumno }} · Cuotas{% endblock %}
+{% block finanzas %}
+<p><a href="{% url 'finanzas:buscar' %}">‹ Buscar otro alumno</a></p>
+
+<section class="tarjeta bloque">
+  <div class="bloque__cab">
+    <div>
+      <h1>{{ alumno }}{% if not alumno.activo %} <small class="etiqueta">inactivo</small>{% endif %}</h1>
+      <p class="tenue">@{{ alumno.usuario.username }} · {{ alumno.dias_por_semana }} día{{ alumno.dias_por_semana|pluralize }} por semana{% if alumno.telefono %} · {{ alumno.telefono }}{% endif %}</p>
+      {% if descuentos %}<p class="tenue">Descuentos vigentes: {{ descuentos|join:", " }}</p>{% endif %}
+    </div>
+    <div class="deuda-total {% if deuda %}nivel-lleno{% else %}nivel-libre{% endif %}">
+      <small>{% if deuda %}Debe hoy{% else %}Al día{% endif %}</small>
+      <b>{{ deuda|pesos }}</b>
+    </div>
+  </div>
+  <div class="acciones">
+    <a class="secundario" href="{% url 'admin:turnos_alumno_change' alumno.pk %}">Editar alumno y descuentos</a>
+    <form method="post" action="{% url 'finanzas:generar_alumno' alumno.pk %}">{% csrf_token %}
+      <button class="secundario">Generar cuota del mes</button></form>
+  </div>
+</section>
+
+{% if impagas %}
+<h2>Cuotas a cobrar</h2>
+<div class="cuotas-impagas">
+  {% for c in impagas %}
+  <article class="tarjeta cuota nivel-{{ c.estado_css }}">
+    <header class="cuota__cab">
+      <h3>{{ c.periodo|date:"F Y"|capfirst }}</h3>
+      <span class="estado nivel-{{ c.estado_css }}">{{ c.estado_visible }}</span>
+    </header>
+    <dl class="cuota__detalle">
+      <dt>Plan</dt><dd>{{ c.dias_por_semana }} día{{ c.dias_por_semana|pluralize }}/sem · {{ c.monto_base|pesos }}</dd>
+      {% if c.descuento_total %}<dt>Descuento</dt><dd>−{{ c.descuento_total|pesos }} <small>{{ c.detalle_descuentos }}</small></dd>{% endif %}
+      {% if c.recargo %}<dt>Recargo</dt><dd>+{{ c.recargo|pesos }} <small>({{ c.recargo_porcentaje|floatformat:"-2" }}%)</small></dd>{% endif %}
+      {% if c.monto_pagado %}<dt>Pagado</dt><dd>{{ c.monto_pagado|pesos }}</dd>{% endif %}
+      <dt>Vence</dt><dd>{{ c.fecha_vencimiento|date:"d/m/Y" }}</dd>
+      <dt>Saldo</dt><dd><b>{{ c.saldo_pendiente|pesos }}</b>{% if c.recargo_hoy %} <small class="aviso-recargo">+ {{ c.recargo_hoy|pesos }} de recargo si se paga hoy</small>{% endif %}</dd>
+    </dl>
+    <form method="post" action="{% url 'finanzas:cobrar' c.pk %}" class="form-pago">
+      {% csrf_token %}
+      <label>Monto {{ c.form.monto }}</label>
+      <label>Método {{ c.form.metodo }}</label>
+      <label>Fecha {{ c.form.fecha }}</label>
+      <label>Referencia {{ c.form.referencia }}</label>
+      <label class="ancho">Observaciones {{ c.form.observaciones }}</label>
+      <button class="primario ancho">Registrar pago</button>
+    </form>
+    {% if c.recargo_hoy %}<p class="tenue chico">El monto incluye el recargo por pagar después del vencimiento. Si el alumno pagó antes del {{ c.fecha_vencimiento|date:"d/m" }} (por ejemplo, una transferencia cargada tarde), poné esa fecha y {{ c.saldo_pendiente|pesos }}: no se cobra recargo.</p>{% endif %}
+  </article>
+  {% endfor %}
+</div>
+{% endif %}
+
+<h2>Historial</h2>
+{% if cuotas %}
+<div class="scroll-x">
+<table class="tabla">
+  <thead><tr><th>Período</th><th>Estado</th><th class="num">Monto</th><th class="num">Recargo</th><th class="num">Pagado</th><th class="num">Saldo</th><th>Pagos</th><th></th></tr></thead>
+  <tbody>
+  {% for c in cuotas %}
+    <tr class="{% if c.estado == 'ANULADA' %}anulada{% endif %}">
+      <td>{{ c.periodo|date:"m/Y" }}</td>
+      <td><span class="estado nivel-{{ c.estado_css }}">{{ c.estado_visible }}</span></td>
+      <td class="num">{{ c.monto_final|pesos }}</td>
+      <td class="num">{% if c.recargo %}{{ c.recargo|pesos }}{% else %}—{% endif %}</td>
+      <td class="num">{{ c.monto_pagado|pesos }}</td>
+      <td class="num">{% if c.estado == 'ANULADA' %}—{% else %}{{ c.saldo_pendiente|pesos }}{% endif %}</td>
+      <td>
+        {% for p in c.pagos.all %}
+        <div class="pago{% if p.anulado %} pago--anulado{% endif %}">
+          {{ p.fecha|date:"d/m" }} · {{ p.monto|pesos }} · {{ p.get_metodo_display }}{% if p.referencia %} · {{ p.referencia }}{% endif %}
+          {% if p.anulado %}<small>(anulado: {{ p.motivo_anulacion }})</small>
+          {% else %}
+          <form method="post" action="{% url 'finanzas:anular_pago' p.pk %}" class="en-linea"
+                onsubmit="const m = prompt('Motivo de la anulación del pago de {{ p.monto|pesos }}:'); if (!m) return false; this.motivo.value = m;">
+            {% csrf_token %}<input type="hidden" name="motivo"><button class="link peligro">anular</button>
+          </form>
+          {% endif %}
+        </div>
+        {% empty %}—{% endfor %}
+      </td>
+      <td>
+        {% if c.estado == 'PENDIENTE' %}
+        <form method="post" action="{% url 'finanzas:anular_cuota' c.pk %}" class="en-linea"
+              onsubmit="const m = prompt('Motivo para anular la cuota {{ c.periodo|date:'m/Y' }} (baja, error…):'); if (!m) return false; this.motivo.value = m;">
+          {% csrf_token %}<input type="hidden" name="motivo"><button class="link peligro">Anular cuota</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}<p class="vacio">Todavía no tiene cuotas.</p>{% endif %}
+{% endblock %}
