@@ -11,11 +11,19 @@
 
 ## 1. En tu computadora: subir el código a GitHub
 
-Creá un repositorio **vacío** en GitHub (sin README ni .gitignore). Recomendado: privado.
+Repositorio: https://github.com/gafcines-GAF/GYM-DEMO (cuenta `gafcines-GAF`). El remoto ya
+está configurado con la cuenta en la dirección, así Git no usa otra sesión guardada:
 
 ```bash
-git remote add origin https://github.com/TU_USUARIO_GITHUB/TU_REPO.git
+git remote set-url origin https://gafcines-GAF@github.com/gafcines-GAF/GYM-DEMO.git
 git push -u origin main
+```
+
+Si aparece `SSL certificate ... unable to get local issuer certificate`, hacé que Git use los
+certificados de Windows (pasa con antivirus o redes que inspeccionan HTTPS):
+
+```bash
+git config --global http.sslBackend schannel
 ```
 
 Antes de pushear, verificá que no se suba ningún secreto ni la base local:
@@ -28,7 +36,7 @@ git ls-files | grep -E "^\.env$|db\.sqlite3|staticfiles/" || echo "OK: nada sens
 
 ## 2. En PythonAnywhere: consola Bash
 
-Abrí **Consoles → Bash** y ejecutá en orden. Reemplazá `TU_USUARIO_GITHUB/TU_REPO`.
+Abrí **Consoles → Bash** y ejecutá en orden. Repositorio: `gafcines-GAF/GYM-DEMO`.
 Si el repositorio es privado, git te va a pedir usuario y, como contraseña, un
 *Personal Access Token* de GitHub (no tu contraseña de GitHub).
 
@@ -39,7 +47,7 @@ ls /usr/bin/python3.1*
 
 ```bash
 cd ~
-git clone https://github.com/TU_USUARIO_GITHUB/TU_REPO.git Gym
+git clone https://github.com/gafcines-GAF/GYM-DEMO.git Gym
 cd ~/Gym
 ```
 
