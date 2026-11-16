@@ -2,7 +2,8 @@ from datetime import date
 
 
 class FechaConverter:
-    regex = r"\d{4}-\d{2}-\d{2}"
+    # Solo años 2000-2099: evita errores 500 por fechas extremas (p. ej. 0001-01-01)
+    regex = r"20\d{2}-\d{2}-\d{2}"
 
     def to_python(self, value):
         try:

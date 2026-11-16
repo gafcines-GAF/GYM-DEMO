@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import admin
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 from django.forms.models import BaseInlineFormSet
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -120,6 +121,14 @@ class AlumnoForm(forms.ModelForm):
                 raise forms.ValidationError("Usuario y contraseña son obligatorios.")
             if User.objects.filter(username=data["username"]).exists():
                 self.add_error("username", "Ese usuario ya existe.")
+            else:
+                # Aplica los mismos validadores de contraseña que el resto de Django
+                candidato = User(username=data["username"], first_name=data.get("first_name", ""),
+                                 last_name=data.get("last_name", ""), email=data.get("email", ""))
+                try:
+                    validate_password(data["password"], user=candidato)
+                except forms.ValidationError as e:
+                    self.add_error("password", e)
         return data
 
     def preparar_usuario(self, alumno):

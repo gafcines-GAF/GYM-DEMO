@@ -20,7 +20,8 @@ ACTIVA = Inscripcion.Estado.ACTIVA
 # ── Helpers ───────────────────────────────────────────────────
 def _volver(request, defecto):
     nxt = request.POST.get("next") or request.GET.get("next")
-    if nxt and url_has_allowed_host_and_scheme(nxt, {request.get_host()}):
+    if nxt and url_has_allowed_host_and_scheme(nxt, {request.get_host()},
+                                               require_https=request.is_secure()):
         return redirect(nxt)
     return redirect(defecto)
 
@@ -81,7 +82,7 @@ def vista_semana(request, fecha):
 
 @login_required
 def vista_mes(request, anio, mes):
-    if not 1 <= mes <= 12:
+    if not (1 <= mes <= 12 and 2000 <= anio <= 2099):
         raise Http404
     primero = date(anio, mes, 1)
     ultimo = date(anio, mes, monthrange(anio, mes)[1])

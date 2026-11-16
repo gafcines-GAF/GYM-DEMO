@@ -62,6 +62,12 @@ def generar(request):
     return redirect(f"{reverse('finanzas:dashboard')}?periodo={periodo:%Y-%m}")
 
 
+def _celda(texto) -> str:
+    """Evita la inyección de fórmulas en Excel (un nombre como '=HYPERLINK(...)')."""
+    texto = str(texto or "")
+    return "'" + texto if texto[:1] in ("=", "+", "-", "@", "\t", "\r") else texto
+
+
 @requiere_finanzas
 def deudores_csv(request):
     respuesta = HttpResponse(content_type="text/csv; charset=utf-8")
@@ -71,8 +77,8 @@ def deudores_csv(request):
     w.writerow(["Alumno", "Usuario", "Teléfono", "Activo", "Cuotas impagas", "Vencida desde",
                 "Deuda vencida", "Deuda total", "Recargo estimado", "A cobrar"])
     for d in consultas.deudores():
-        w.writerow([f'{d["alumno__usuario__last_name"]}, {d["alumno__usuario__first_name"]}',
-                    d["alumno__usuario__username"], d["alumno__telefono"],
+        w.writerow([_celda(f'{d["alumno__usuario__last_name"]}, {d["alumno__usuario__first_name"]}'),
+                    _celda(d["alumno__usuario__username"]), _celda(d["alumno__telefono"]),
                     "Sí" if d["alumno__activo"] else "No", d["cuotas_impagas"],
                     d["vencida_desde"].strftime("%d/%m/%Y") if d["vencida_desde"] else "",
                     str(d["deuda_vencida"]).replace(".", ","), str(d["deuda_total"]).replace(".", ","),

@@ -8,6 +8,8 @@ cambios de horario (puntual o permanente) y asignación manual de profesores con
 ```bash
 python -m venv .venv
 .venv\Scripts\python -m pip install -r requirements.txt
+copy .env.example .env                           # completar: clave nueva, DJANGO_DEBUG=True,
+                                                 # DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
 .venv\Scripts\python manage.py migrate
 .venv\Scripts\python manage.py cargar_demo      # datos de prueba (borra turnos existentes)
 .venv\Scripts\python manage.py runserver
@@ -23,6 +25,12 @@ Abrir http://localhost:8000
 | Profesor nivel 8 (accede a Finanzas) | `profe8` | `demo1234` |
 | Profesor nivel 5 (sin acceso a Finanzas) | `profe5` | `demo1234` |
 | Alumno | `alumno` | `demo1234` |
+
+## Producción
+
+La configuración sensible se lee de `.env` (ver `.env.example`). Con `DJANGO_DEBUG=False` se activan
+HTTPS obligatorio, cookies seguras, HSTS y cabeceras de seguridad. Guía paso a paso para
+PythonAnywhere: [DEPLOY.md](DEPLOY.md).
 
 ## Comandos
 

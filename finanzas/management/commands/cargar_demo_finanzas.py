@@ -8,7 +8,8 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
-from django.core.management.base import BaseCommand
+from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
 
@@ -34,9 +35,14 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--limpiar", action="store_true",
                             help="Solo borra los datos financieros y termina.")
+        parser.add_argument("--permitir-produccion", action="store_true",
+                            help="Permite correrlo con DEBUG=False (BORRA cuotas y pagos).")
 
     @transaction.atomic
-    def handle(self, *args, limpiar=False, **opts):
+    def handle(self, *args, limpiar=False, permitir_produccion=False, **opts):
+        if not settings.DEBUG and not permitir_produccion:
+            raise CommandError("cargar_demo_finanzas BORRA cuotas y pagos. No se ejecuta con "
+                               "DEBUG=False salvo que agregues --permitir-produccion.")
         Pago.objects.all().delete()
         Cuota.objects.all().delete()
         Descuento.objects.all().delete()

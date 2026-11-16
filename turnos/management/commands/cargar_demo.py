@@ -4,9 +4,10 @@ from collections import Counter
 from datetime import timedelta
 
 from django.apps import apps
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
 
@@ -30,14 +31,23 @@ PESOS_HORA = {7: 7, 8: 9, 9: 3, 10: 2, 11: 1, 12: 3, 13: 2, 14: 1, 15: 1, 16: 2,
 class Command(BaseCommand):
     help = "Crea un profesor, alumnos con semana tipo y genera los turnos del mes actual y el siguiente."
 
+    def add_arguments(self, parser):
+        parser.add_argument("--permitir-produccion", action="store_true",
+                            help="Permite correrlo con DEBUG=False (BORRA todos los alumnos).")
+
     @transaction.atomic
-    def handle(self, *args, **opts):
+    def handle(self, *args, permitir_produccion=False, **opts):
+        if not settings.DEBUG and not permitir_produccion:
+            raise CommandError(
+                "cargar_demo BORRA todos los alumnos, turnos y cuotas, y crea usuarios con "
+                "contraseña conocida. No se ejecuta con DEBUG=False (producción). "
+                "Si de verdad querés hacerlo, agregá --permitir-produccion.")
         rnd = random.Random(42)
         params = ParametrosGimnasio.load()
 
         finanzas = apps.is_installed("finanzas")
         if finanzas:      # las cuotas protegen a los alumnos: se limpian primero
-            call_command("cargar_demo_finanzas", limpiar=True)
+            call_command("cargar_demo_finanzas", limpiar=True, permitir_produccion=True)
         Inscripcion.objects.all().delete()
         Clase.objects.all().delete()
         Alumno.objects.all().delete()
@@ -86,7 +96,7 @@ class Command(BaseCommand):
                 services.asignar_por_profesor(profe, extra, llena.fecha, llena.hora)
 
         if finanzas:
-            call_command("cargar_demo_finanzas", stdout=self.stdout._out)
+            call_command("cargar_demo_finanzas", permitir_produccion=True, stdout=self.stdout._out)
 
         self.stdout.write(self.style.SUCCESS(
             f"Listo: {Alumno.objects.count()} alumnos, {total} inscripciones.\n"

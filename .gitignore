@@ -1,9 +1,32 @@
+# Entornos virtuales
 .venv/
+venv/
+env/
+
+# Secretos y configuración local
+.env
+.env.*
+!.env.example
+
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+
+# Base de datos local
 db.sqlite3
+db.sqlite3-journal
+
+# Estáticos recolectados (collectstatic)
+staticfiles/
+
 # Imágenes subidas por el usuario (las originales sí se versionan)
 media/*
 !media/sitio/
 media/sitio/*
 !media/sitio/default/
+
+# Editores / sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
